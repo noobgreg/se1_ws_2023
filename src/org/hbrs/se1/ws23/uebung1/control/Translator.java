@@ -8,8 +8,10 @@ package org.hbrs.se1.ws23.uebung1.control;
  * @author saschaalda
  *
  */
+// Interface musste 'public' gemacht werden, damit man auch ausserhalb des control packages auf das Interface zugreifen kann.
+// Die Methode translateNumber muss 'static' sein.
 
-interface Translator {
+public interface Translator {
 	
 	double version = 1.0; // Version des Interface
 	
@@ -17,7 +19,9 @@ interface Translator {
 	 * Uebersetzt eine numerische Zahl in eine String-basierte
 	 * Repraesentation gemaess der Spezifikation in der Aufgabe 1-2 
 	 */
-	public String translateNumber(int number);
+	public static String translateNumber(int number) {
+		return "null";
+	}
 
 } 
 
