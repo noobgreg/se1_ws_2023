@@ -4,13 +4,32 @@ public class GermanTranslator implements Translator {
 
 	public String date = "Okt/2023"; // Default-Wert
 
+
+
 	/**
 	 * Methode zur Übersetzung einer Zahl in eine String-Repraesentation
 	 */
 	public String translateNumber( int number ) {
-		// [ihr Source Code aus Übung 1-2]
+		String[] translations = {
+				"Übersetzung der Zahl " + number + " nicht möglich (Version: " + Translator.version + ")",
+				"eins",
+				"zwei",
+				"drei",
+				"vier",
+				"fünf",
+				"sechs",
+				"sieben",
+				"acht",
+				"neun",
+				"zehn"
+		};
 
-		return "null";
+		try {
+			return translations[number];
+		}
+		catch(ArrayIndexOutOfBoundsException e) {
+			return translations[0];
+		}
 	}
 
 	/**
