@@ -1,30 +1,38 @@
 package org.hbrs.se1.ws23.uebung2.test;
-import org.hbrs.se1.ws23.uebung2.ConcreteMember;
-import org.hbrs.se1.ws23.uebung2.Container;
-import org.hbrs.se1.ws23.uebung2.ContainerException;
+import org.hbrs.se1.ws23.uebung2.*;
+import org.hbrs.se1.ws23.uebung3.persistence.PersistenceException;
+import org.hbrs.se1.ws23.uebung3.persistence.PersistenceStrategyMongoDB;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.List;
 
 class ContainerTest {
 
     private Container container;
     private ConcreteMember member_one;
     private ConcreteMember member_two;
+    private List<Member> list = null;
+    private MemberView view;
+    private ByteArrayOutputStream output;
 
     @BeforeEach
     void setUp() {
-        container = new Container();
+        container = Container.getInstance();
+        container.clear();
         member_one = new ConcreteMember(1);
         member_two = new ConcreteMember(2);
+        view = new MemberView();
+        output = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(output));
     }
 
     @Test
     void newTest() {
-        Container container_test = new Container();
+        Container container_test = Container.getInstance();
         Assertions.assertNotNull(container_test);
     }
 
@@ -84,18 +92,19 @@ class ContainerTest {
 
     @Test
     void dumpTest() throws ContainerException {
-        container.addMember(member_one);
-        // Capture the console output
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(output));
+        container.addMember(new ConcreteMember(1));
+        List<Member> list = container.getCurrentList();
 
-        container.dump();
+        view.dump(list);
+
+        // Convert output stream to a string
+        String outputString = output.toString();
 
         // Reset the console output to its original state
-        System.setOut(new PrintStream(System.out));
+        System.setOut(System.out);
 
         String expectedOutput = "Member (ID = 1)";
-        Assertions.assertTrue(output.toString().contains(expectedOutput),
+        Assertions.assertTrue(outputString.contains(expectedOutput),
                 "The dump output should contain: " + expectedOutput);
     }
 
@@ -105,6 +114,39 @@ class ContainerTest {
         container.addMember(member_one);
         int result = container.size();
         Assertions.assertEquals(1, result);
+    }
+
+    @Test
+    void testStoreWithoutStrategy() {
+        // Use the singleton instance of Container
+        Assertions.assertThrows(PersistenceException.class, container::store);
+    }
+
+    @Test
+    void testLoadWithoutStrategy() {
+        // Use the singleton instance of Container
+        Assertions.assertThrows(PersistenceException.class, container::load);
+    }
+
+    @Test
+    void testMongoDBExceptions() throws UnsupportedOperationException {
+        PersistenceStrategyMongoDB persistenceStrategyMongoDB = new PersistenceStrategyMongoDB();
+        try {
+            persistenceStrategyMongoDB.save(list);
+            Assertions.fail("An exception should be thrown because the method save is not implemented");
+        } catch (UnsupportedOperationException e) {
+            // Check if the exception message is as expected
+            Assertions.assertEquals("Not implemented!", e.getMessage());
+        }
+
+        try {
+            persistenceStrategyMongoDB.load();
+            Assertions.fail("An exception should be thrown because the method load is not implemented");
+        } catch (UnsupportedOperationException e) {
+            // Check if the exception message is as expected
+            Assertions.assertEquals("Not implemented!", e.getMessage());
+        }
+
     }
 
 
