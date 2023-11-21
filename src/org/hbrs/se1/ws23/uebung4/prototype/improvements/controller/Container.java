@@ -78,9 +78,10 @@ public class Container {
 		// Initialisierung des Eingabe-View
 		Scanner scanner = new Scanner( System.in );
 
+		// Ausgabe eines Texts zur Begruessung
+		System.out.println("UserStory-Tool V1.0 by Julius P. (dedicated to all my friends)" + '\n' + "type 'help' for help.");
+
 		while ( true ) {
-			// Ausgabe eines Texts zur Begruessung
-			System.out.println("UserStory-Tool V1.0 by Julius P. (dedicated to all my friends)");
 
 			System.out.print( "> "  );
 			strInput = scanner.nextLine();
@@ -88,28 +89,58 @@ public class Container {
 			// Extrahiert ein Array aus der Eingabe
 			String[] strings = strInput.split(" ");
 
-			// 	Falls 'help' eingegeben wurde, werden alle Befehle ausgedruckt
+			// 	Falls 'help' eingegeben wird, werden alle Befehle ausgedruckt
 			if ( strings[0].equals("help") ) {
-				System.out.println("Folgende Befehle stehen zur Verfuegung: help, dump....");
+				System.out.println("Folgende Befehle stehen zur Verfuegung: enter, store, load, dump, search, exit, help");
 			}
-			// Auswahl der bisher implementierten Befehle:
+
+			// Falls 'dump' eingegeben wird, wird die Methode startAusgabe() aufgerufen
 			if ( strings[0].equals("dump") ) {
 				startAusgabe();
 			}
-			// Auswahl der bisher implementierten Befehle:
+
+			// Falls 'enter' eingegeben wird, wird eine neue UserStory im Container gespeichert
 			if ( strings[0].equals("enter") ) {
-				// Daten einlesen ...
-				// this.addUserStory( new UserStory( data ) ) um das Objekt in die Liste einzufügen.
+
+				int id = Integer.parseInt(strings[1]);
+				String titel = strings[2];
+				String akzeptanzkriterium = strings[3];
+				int mehrwert = Integer.parseInt(strings[4]);
+				int strafe = Integer.parseInt(strings[5]);
+				int aufwand = Integer.parseInt(strings[6]);
+				int risk = Integer.parseInt(strings[7]);
+				String project = strings[8];
+
+				// Check negative Werte für Gloger-Formel
+				if (mehrwert < 0 || strafe < 0 || aufwand < 0 || risk < 0) {
+					System.out.println("Error: 'mehrwert', 'strafe', 'aufwand', and 'risk' must be non-negative.");
+				} else {
+					double prio = calculatePrio(mehrwert, strafe, aufwand, risk);
+
+					this.addUserStory( new UserStory(id, titel, akzeptanzkriterium, mehrwert, strafe, aufwand, risk, prio, project) );
+				}
 			}
-								
+
+			// Falls 'load' eingegeben wird, dann wird die Methode load() aufgerufen
+			if (  strings[0].equals("load")  ) {
+				load();
+			}
+
+			// Falls 'store' eingegeben wird, dann wird die Methode store() aufgerufen
 			if (  strings[0].equals("store")  ) {
-				// Beispiel-Code
-				UserStory userStory = new UserStory();
-				userStory.setId(22);
-				this.addUserStory( userStory );
-				this.store();
+				store();
 			}
-		} // Ende der Schleife
+
+			// Falls 'search' eingegebn wird, dann wird die Methode searchProject() aufgerufen
+			if (  strings[0].equals("search")  ) {
+				searchProject(strings[1]);
+			}
+
+			// Falls 'exit' eingegeben wird, dann wird aus dem while-loop ausgebrochen
+			if (  strings[0].equals("exit")  ) {
+				break;
+			}
+		}// Ende der Schleife
 	}
 
 	/**
@@ -124,20 +155,26 @@ public class Container {
 		Collections.sort( this.liste );
 
 		// Klassische Ausgabe ueber eine For-Each-Schleife
-		for (UserStory story : liste) {
-			System.out.println(story.toString());
-		}
+		//for (UserStory story : liste) {
+			//System.out.println(story.toString());
+		//}
 
 		// [Variante mit forEach-Methode / Streams (--> Kapitel 9, Lösung Übung Nr. 2)?
 		//  Gerne auch mit Beachtung der neuen US1
 		// (Filterung Projekt = "ein Wert (z.B. Coll@HBRS)" und Risiko >=5
 		List<UserStory> reduzierteListe = this.liste.stream()
-				.filter( story -> story.getProject().equals("Coll@HBRS") )
-				.filter(  story -> story.getRisk()  >= 5 )
+				//.filter(story -> story.getProject() != null && story.getProject().equals("Coll@HBRS"))
+				//.filter(story -> story.getRisk()  >= 5 )
+				// hier wird die ausgabe nach den prio werten sortiert
+				.sorted(Comparator.comparingDouble(UserStory::getPrio).reversed())
 				.collect( Collectors.toList() );
+		// hier werden alle USerStories ausgegeben
+		for (UserStory story : reduzierteListe) {
+			System.out.println(story);
+		}
 	}
 
-	/*
+	/**
 	 * Methode zum Speichern der Liste. Es wird die komplette Liste
 	 * inklusive ihrer gespeicherten UserStory-Objekte gespeichert.
 	 * 
@@ -160,7 +197,7 @@ public class Container {
 		}
 	}
 
-	/*
+	/**
 	 * Methode zum Laden der Liste. Es wird die komplette Liste
 	 * inklusive ihrer gespeicherten UserStory-Objekte geladen.
 	 * 
@@ -192,7 +229,7 @@ public class Container {
 	}
 
 	/**
-	 * Methode zum Hinzufügen eines Mitarbeiters unter Wahrung der Schlüsseleigenschaft
+	 * Methode zum Hinzufügen einer UserStory unter Wahrung der Schlüsseleigenschaft
 	 * @param userStory
 	 * @throws ContainerException
 	 */
@@ -249,5 +286,35 @@ public class Container {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Methode um den Prio-Wert nach Gloger zu berechnen
+	 * @param mehrwert
+	 * @param strafe
+	 * @param aufwand
+	 * @param risk
+	 * @return
+	 */
+	public double calculatePrio(int mehrwert, int strafe, int aufwand, int risk) {
+		return (double)(mehrwert + strafe) / (aufwand + risk);
+	}
+
+	/**
+	 * Methode, die nach einem bestimmten Projekt sucht
+	 * @param project
+	 */
+	public void searchProject(String project) {
+		List<UserStory> reduzierteListe = this.liste.stream()
+				.filter(story -> story.getProject() != null && story.getProject().equals(project))
+				.collect(Collectors.toList());
+
+		if (reduzierteListe.isEmpty()) {
+			System.out.println("Keine passende UserStory zu dem Projekt '" + project + "' gefunden. Bitte überprüfe deine Eingabe!");
+		} else {
+			for (UserStory story : reduzierteListe) {
+				System.out.println(story);
+			}
+		}
 	}
 }

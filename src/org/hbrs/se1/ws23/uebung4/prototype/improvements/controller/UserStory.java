@@ -5,12 +5,14 @@ import java.io.Serializable;
     public class UserStory implements Comparable<UserStory>, Serializable {
 
         String titel;
+        String akzeptanzkriterium;
         int aufwand = 0;
         int id = 0;
         int mehrwert = 0;
         int risk = 0;
         int strafe = 0;
         double prio = 0.0;
+        String project;
 
         public String getProject() {
             return project;
@@ -20,18 +22,19 @@ import java.io.Serializable;
             this.project = project;
         }
 
-        String project;
 
 
-        public UserStory(int id, String titel, int mehrwert, int strafe,
-                         int aufwand, int risk, double prio) {
+        public UserStory(int id, String titel, String akzeptanzkriterium, int mehrwert, int strafe,
+                         int aufwand, int risk, double prio, String project) {
             this.id = id;
             this.titel = titel;
+            this.akzeptanzkriterium = akzeptanzkriterium;
             this.mehrwert = mehrwert;
             this.strafe = strafe;
             this.aufwand = aufwand;
             this.risk = risk;
             this.prio = prio;
+            this.project = project;
         }
 
         public UserStory() {
@@ -97,6 +100,24 @@ import java.io.Serializable;
             }
             else return -1;
         }
+
+        @Override
+        public String toString() {
+            // Assuming other fields include title, value, and effort, for example
+            return String.format("| %-1s | %-1s | %-1s | %-1s | %-1s | %-1s | %-1s | %-1s | %-1s |",
+                    "ID: " + id,
+                    "Titel: " + titel,
+                    "Akzeptanzkriterium" + akzeptanzkriterium,
+                    "Project: " + project,
+                    "Risk: " + risk,
+                    "Mehrwert: " + mehrwert,
+                    "Aufwand: " + aufwand,
+                    "Strafe:" + strafe,
+                    "Prio:" + String.format("%.2f", prio)
+            );
+        }
+
+
 
     }
 
